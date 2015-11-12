@@ -7,13 +7,13 @@
 #include <EEPROM.h>
 
 #define VERSION_HI 0
-#define VERSION_LO 3
+#define VERSION_LO 4
 
 // Set number of pixels (RGBW) per output
-#define NUM_PIXELS_OUT_1 20
-#define NUM_PIXELS_OUT_2 20
-#define NUM_PIXELS_OUT_3 20
-#define NUM_PIXELS_OUT_4 20
+#define NUM_PIXELS_OUT_1 144*2
+#define NUM_PIXELS_OUT_2 128*2
+//#define NUM_PIXELS_OUT_3 128
+//#define NUM_PIXELS_OUT_4 128
 
 //
 #define RGBW_PER_UNIVERSE   128
@@ -22,7 +22,6 @@
 // Constants of max number RGB diodes per output
 #define NUM_RGB_LEDS_4      (int)ceil(RGB_PER_UNIVERSE * 4)
 #define NUM_RGB_LEDS_3    (int)ceil(RGB_PER_UNIVERSE * 3) 
-//#define NUM_RGB_LEDS_3      287 // We never use 3 full universes, so cap the length for better performance
 #define NUM_RGB_LEDS_2      (int)ceil(RGB_PER_UNIVERSE * 2)
 #define NUM_RGB_LEDS_1      (int)ceil(RGB_PER_UNIVERSE)
 
@@ -31,7 +30,7 @@
 #define PIN_LED_1 5
 #define PIN_LED_2 20
 #define PIN_LED_3 8
-#define PIN_LED_4 14
+//#define PIN_LED_4 14
 
 // ID of the settings block
 #define CONFIG_VERSION "ls1"
@@ -64,8 +63,8 @@ ArtConfig config = {
 
   // These fields get overwritten by loadConfig:
   0, 0,                                 // Net (0-127) and subnet (0-15)
-  "VardeLED",                           // Short name
-  "VardeLED",                           // Long name
+  "DoomLED3k",                           // Short name
+  "DoomLED3000",                           // Long name
   4,                                    // Number of ports
   {PortTypeDmx | PortTypeOutput, PortTypeDmx | PortTypeOutput, PortTypeDmx | PortTypeOutput, PortTypeDmx | PortTypeOutput}, // Port types
   {0, 0, 0, 0},                         // Port input universes (0-15)
@@ -120,9 +119,9 @@ void setup() {
 
   // Create 4 outputs with different lengths (can be tweaked)
   FastLED.addLeds<WS2812, PIN_LED_1, RGB>(led_data, NUM_RGB_LEDS_3);
-  FastLED.addLeds<WS2812, PIN_LED_2, RGB>(led_data, NUM_RGB_LEDS_3);
-  FastLED.addLeds<WS2812, PIN_LED_3, RGB>(led_data, NUM_RGB_LEDS_2);
-  FastLED.addLeds<WS2812, PIN_LED_4, RGB>(led_data, NUM_RGB_LEDS_1);
+  FastLED.addLeds<WS2812, PIN_LED_2, RGB>(led_data, NUM_RGB_LEDS_2);
+ // FastLED.addLeds<WS2812, PIN_LED_3, RGB>(led_data, NUM_RGB_LEDS_1);
+ // FastLED.addLeds<WS2812, PIN_LED_4, RGB>(led_data, NUM_RGB_LEDS_1);
   FastLED.setDither(0);
   
   Serial.begin(9600);
@@ -173,30 +172,19 @@ digitalWrite(PIN_DEBUG, HIGH);
                   case 0: {
                       // Copy dmx data to the first 1/4 of led_data
                       memcpy(led_data_ptr_1, dmx->Data, dmx_length);
-                      //FastLED[0].show(led_data, NUM_RGB_LEDS_1, 255);
                       break;
                     }
                   case 1: {     
                       // Copy dmx data to the second 1/4 of the led_data              
                       memcpy(led_data_ptr_2, dmx->Data, dmx_length);
-                     // FastLED[0].show((CRGB*)led_data_ptr_1, NUM_RGB_LEDS_2, 255);
-                      //FastLED[1].show((CRGB*)led_data_ptr_2, NUM_RGB_LEDS_1, 255);
-                      
                       break;
                     }
                   case 2: {
                       memcpy(led_data_ptr_3, dmx->Data, dmx_length);
-                      //FastLED[0].show((CRGB*)led_data_ptr_1, NUM_RGB_LEDS_3, 255);
-                      //FastLED[1].show((CRGB*)led_data_ptr_2, NUM_RGB_LEDS_2, 255);
-                      //FastLED[2].show((CRGB*)led_data_ptr_3, NUM_RGB_LEDS_1, 255);
                       break;
                     }
                   case 3: {
                       memcpy(led_data_ptr_4, dmx->Data, dmx_length);
-                      //FastLED[0].show((CRGB*)led_data_ptr_1, NUM_RGB_LEDS_4, 255);
-                      //FastLED[1].show((CRGB*)led_data_ptr_2, NUM_RGB_LEDS_3, 255);
-                      //FastLED[2].show((CRGB*)led_data_ptr_3, NUM_RGB_LEDS_2, 255);
-                      //FastLED[3].show((CRGB*)led_data_ptr_4, NUM_RGB_LEDS_1, 255);
                       break;
                     }
                 }
@@ -205,12 +193,10 @@ digitalWrite(PIN_DEBUG, HIGH);
             break;
           case 0x5200: { //OpSync
             FastLED[0].show((CRGB*)led_data_ptr_1, NUM_PIXELS_OUT_1 *4.0/3.0, 255);              
-            FastLED[1].show((CRGB*)led_data_ptr_2, NUM_PIXELS_OUT_2 *4.0/3.0, 255);              
-            FastLED[2].show((CRGB*)led_data_ptr_3, NUM_PIXELS_OUT_3 *4.0/3.0, 255);              
-            FastLED[3].show((CRGB*)led_data_ptr_4, NUM_PIXELS_OUT_4 *4.0/3.0, 255);              
-             /*FastLED[1].show(led_data, NUM_RGB_LEDS_3, 255);              
-              FastLED[2].show(led_data, NUM_RGB_LEDS_2, 255);              
-               FastLED[3].show(led_data, NUM_RGB_LEDS_1, 255);              */
+            FastLED[1].show((CRGB*)led_data_ptr_3, NUM_PIXELS_OUT_2 *4.0/3.0, 255);              
+            //FastLED[2].show((CRGB*)led_data_ptr_4, NUM_PIXELS_OUT_3 *4.0/3.0, 255);              
+            //FastLED[3].show((CRGB*)led_data_ptr_4, NUM_PIXELS_OUT_4 *4.0/3.0, 255);              
+ 
            break;
           }
           case OpAddress: {
@@ -276,10 +262,10 @@ digitalWrite(PIN_DEBUG, HIGH);
       d[i * 4 + 2] = 0;
       d[i * 4 + 3] = (sin(i + millis() / 100.0) + 1) * 128.0;
     }
-    FastLED[0].show(led_data, NUM_RGB_LEDS_4, 255);
-    FastLED[1].show(led_data, NUM_RGB_LEDS_3, 255);
-    FastLED[2].show(led_data, NUM_RGB_LEDS_2, 255);
-    FastLED[3].show(led_data, NUM_RGB_LEDS_1, 255);
+    FastLED[0].show(led_data, NUM_RGB_LEDS_1, 255);
+    FastLED[1].show(led_data, NUM_RGB_LEDS_2, 255);
+    //FastLED[2].show(led_data, NUM_RGB_LEDS_3, 255);
+    //FastLED[3].show(led_data, NUM_RGB_LEDS_4, 255);
   }
 }
 
@@ -289,14 +275,15 @@ void blink() {
   for (int i = 0; i < NUM_RGB_LEDS_4 * 3; i++) {
     d[i] = 30;
   }
-  FastLED[0].show(led_data, NUM_RGB_LEDS_4, 255);
-
-  delay(300);
+  FastLED[0].show(led_data, NUM_PIXELS_OUT_1 *4.0/3.0, 255);
+  FastLED[1].show(led_data, NUM_PIXELS_OUT_2 *4.0/3.0, 255);
+  delay(3000);
 
   for (int i = 0; i < NUM_RGB_LEDS_4 * 3; i++) {
     d[i] = 0;
   }
-  FastLED[0].show(led_data, NUM_RGB_LEDS_4, 255);
+  FastLED[0].show(led_data, NUM_PIXELS_OUT_1 *4.0/3.0, 255);
+  FastLED[1].show(led_data, NUM_PIXELS_OUT_2 *4.0/3.0, 255);
   delay(100);
 
 }
